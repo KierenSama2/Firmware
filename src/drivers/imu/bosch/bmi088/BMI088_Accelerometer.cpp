@@ -222,7 +222,7 @@ void BMI088_Accelerometer::RunImpl()
 				}
 
 				const uint8_t FIFO_LENGTH_0 = fifo_len_buf[2];        // fifo_byte_counter[7:0]
-				const uint8_t FIFO_LENGTH_1 = fifo_len_buf[3] & 0xFD; // fifo_byte_counter[13:8]
+				const uint8_t FIFO_LENGTH_1 = fifo_len_buf[3] & 0x3F; // fifo_byte_counter[13:8]
 
 				const uint16_t fifo_byte_counter = combine(FIFO_LENGTH_1, FIFO_LENGTH_0);
 
@@ -478,10 +478,10 @@ bool BMI088_Accelerometer::FIFORead(const hrt_abstime &timestamp_sample, uint16_
 	uint8_t *data_buffer = (uint8_t *)&buffer.f[0];
 	int fifo_buffer_index = 0; // start of buffer
 
-	const int fifo_byte_counter = combine(buffer.FIFO_LENGTH_1 & 0xFD, buffer.FIFO_LENGTH_0);
+	const int fifo_byte_counter = combine(buffer.FIFO_LENGTH_1 & 0x3F, buffer.FIFO_LENGTH_0);
 
 	while (fifo_buffer_index < math::min(fifo_byte_counter, transfer_size - 4)) {
-		// header set by first 6 bits
+		// look for header signature (first 6 bits) followed by two bits indicating the status of INT1 and INT2
 		switch (data_buffer[fifo_buffer_index] & 0xFC) {
 		case FIFO::header::sensor_data_frame: {
 				// Acceleration sensor data frame
